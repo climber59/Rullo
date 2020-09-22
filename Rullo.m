@@ -1,6 +1,4 @@
 %{
-add comments to each function
-
 add math helpers
 - probably replace half the targets with current sums
 -- maybe with a toggle
@@ -10,8 +8,6 @@ from target
 
 turn initialCheck() into a function that can check 'r,c' or everything at
 the start of a new game
-
-remove the lock mode button
 
 sanitize the text boxes' inputs
 
@@ -163,7 +159,7 @@ function [ ] = Rullo( )
 		
 		% determine what is clicked
 		if strcmp(type, 'board')
-			if lockMode || strcmp(f.SelectionType,'alt')
+			if strcmp(f.SelectionType,'alt')
 				if board(row,col).EdgeColor == unlockColor
 					board(row,col).EdgeColor = lockColor;
 				else
@@ -284,16 +280,6 @@ function [ ] = Rullo( )
 			text(r2*(w+1), i*r2, num2str(gridSumLR(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 	end
-	
-	% lock mode button callback
-	function [] = lockSwitch(src,~)
-		lockMode = ~lockMode;
-		if lockMode
-			src.String = 'Lock: on';
-		else
-			src.String = 'Lock: off';
-		end
-	end
 
 	% creates the figure and gui objects in the figure
 	function [] = figureSetup()
@@ -337,16 +323,7 @@ function [ ] = Rullo( )
 			'Callback',@gameSetup,...
 			'Units','pixels',...
 			'Position',[50 15, 100 70],...
-			'Tag','50');
-		
-		uicontrol(f,'Style','pushbutton',...
-			'String','Lock: off',...
-			'FontSize',20,...
-			'Callback',@lockSwitch,...
-			'Units','pixels',...
-			'Position',[450 15, 130 70],...
-			'Tag','450');
-		
+			'Tag','50');		
 		
 		uicontrol(f,'Style','text',...
 			'Position',[305 70 45 25],...
