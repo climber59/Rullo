@@ -1,10 +1,15 @@
 %{
+add comments to each function
+
 add math helpers
 - probably replace half the targets with current sums
 -- maybe with a toggle
 --possible have a dropdown to switch those hints with:
 --- target, current sum, difference from target, locked sum, locked difference
 from target
+
+turn initialCheck() into a function that can check 'r,c' or everything at
+the start of a new game
 
 remove the lock mode button
 
@@ -161,7 +166,7 @@ function [ ] = Rullo( )
 						board(row, col).FaceColor = onColor;
 					end
 				end
-				% check if row/col sum is (un)met an change sum indicator as needed
+				% check if row/col sum is (un)met anf change sum indicator as needed
 				
 				% check row
 				s = 0;
