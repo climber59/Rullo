@@ -15,6 +15,12 @@ remove the lock mode button
 
 sanitize the text boxes' inputs
 
+give target product as an option?
+- probably gets large quickly
+
+'Reset' button should not have to delete and redefine graphics objects
+- should just turn everything on and unlock
+
 Proper resizing
 - mostly font sizes
 - give a little buffer so objects aren't cut off slightly
@@ -68,6 +74,7 @@ function [ ] = Rullo( )
 	
 	newGame();
 	
+	% handles resizing the ui when the user resizes the figure
 	function [] = resize(~,~)
 		ax.Position(3) = f.Position(3)-2;
 		ax.Position(4) = f.Position(4)-100;
@@ -81,6 +88,7 @@ function [ ] = Rullo( )
 % 		end
 	end
 
+	% starts a new game
 	function [] = newGame(~,~)
 		randGen(str2num(gridWidth.String),str2num(gridHeight.String),str2num(gridRangeMin.String):str2num(gridRangeMax.String));
 % 		textDisplay(grid, gridLog) % print to command window for debugging
@@ -89,6 +97,7 @@ function [ ] = Rullo( )
 		initialCheck();
 	end
 	
+	% checks if any targets are already met when the game starts
 	function [] = initialCheck()
 		w = size(grid,2);
 		h = size(grid,1);
@@ -121,6 +130,7 @@ function [ ] = Rullo( )
 		end
 	end
 	
+	% checks if the puzzle has been completed
 	function [] = wincheck()
 		w = size(grid,2);
 		h = size(grid,1);
@@ -144,6 +154,7 @@ function [ ] = Rullo( )
 		end
 	end
 	
+	% called when clicking the tiles or targets
 	function [] = mouseClick(~,~, type, row, col)
 		%f.SelectionType
 		w = size(grid,2);
@@ -200,7 +211,7 @@ function [ ] = Rullo( )
 					sumsTB(2, col).EdgeColor = unsumColor;
 				end
 			end
-		elseif strcmp(type, 'sum')
+		elseif strcmp(type, 'target')
 			if row==0 || row==h+1
 				summed = (sumsTB(1,col).EdgeColor==sumColor);
 			else
@@ -234,6 +245,7 @@ function [ ] = Rullo( )
 		
 	end
 
+	% creates the gui objects in the axes
 	function [] = gameSetup(~,~)
 		board = patch;
 		sumsTB = patch;
@@ -260,19 +272,20 @@ function [ ] = Rullo( )
 		x = [-r -r r r];
 		y = [-r r r -r];
 		for i = 1:w
-			sumsTB(1,i) = patch(x+i*r2, y, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'sum', 0, i}, 'EdgeColor', unsumColor);
+			sumsTB(1,i) = patch(x+i*r2, y, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', 0, i}, 'EdgeColor', unsumColor);
 			text(i*r2, 0, num2str(gridSumTB(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			sumsTB(2,i) = patch(x+i*r2, y+r2*(h+1), [1 1 1], 'ButtonDownFcn', {@mouseClick, 'sum', h+1, i}, 'EdgeColor', unsumColor);
 			text(i*r2, r2*(h+1), num2str(gridSumTB(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		for i = 1:h
-			sumsLR(i,1) = patch(x, y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'sum', i, 0}, 'EdgeColor', unsumColor);
+			sumsLR(i,1) = patch(x, y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, 0}, 'EdgeColor', unsumColor);
 			text(0, i*r2, num2str(gridSumLR(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
-			sumsLR(i,2) = patch(x+r2*(w+1), y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'sum', i, w+1}, 'EdgeColor', unsumColor);
+			sumsLR(i,2) = patch(x+r2*(w+1), y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', unsumColor);
 			text(r2*(w+1), i*r2, num2str(gridSumLR(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 	end
 	
+	% lock mode button callback
 	function [] = lockSwitch(src,~)
 		lockMode = ~lockMode;
 		if lockMode
@@ -282,6 +295,7 @@ function [ ] = Rullo( )
 		end
 	end
 
+	% creates the figure and gui objects in the figure
 	function [] = figureSetup()
 		f = figure(1);
 		clf
@@ -360,7 +374,9 @@ function [ ] = Rullo( )
 			'String','9',...
 			'Tag','375');
 	end
-
+	
+	% generates the grid of random numbers and which ones should be 'on' to
+	% determine the target values
 	function [ ] = randGen( w, h, r )
 		grid = zeros(h,w);
 		gridLog = zeros(h,w);
