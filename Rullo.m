@@ -1,22 +1,36 @@
 %{
-math helpers:
-All at once would be too much, maybe a selector to change what's shown. An
-option to show each or none. Display using the left/bottom sums, or extra
-ui elements
--current sum
--difference
--locked sum 
--???locked difference
+add math helpers
+- probably replace half the targets with current sums
+-- maybe with a toggle
+--possible have a dropdown to switch those hints with:
+--- target, current sum, difference from target, locked sum, locked difference
+from target
 
-idiot proof the text boxes
+remove the lock mode button
+
+sanitize the text boxes' inputs
 
 Proper resizing
+- mostly font sizes
+- give a little buffer so objects aren't cut off slightly
 
-stop doing things after winnning
+end the game after the puzzle is complete
 
-make it look less like crap
+center the winning checkmark
+- also replace it with the good one
 
 play around with how many numbers should be on
+- between 25%-75% ?
+- at least 2 from each row/col?
+
+include some preset number ranges
+- 2:3
+- -9:9
+--- related, add a method to enter specific numbers? eg '1 3 5 7 9'
+
+generally improve the visuals
+- target's correct sum indicator is hard to see
+- more pleasant colors would be nice
 %}
 function [ ] = Rullo( )
 	clc
@@ -216,7 +230,6 @@ function [ ] = Rullo( )
 	end
 
 	function [] = gameSetup(~,~)
-		
 		board = patch;
 		sumsTB = patch;
 		sumsLR = patch;
