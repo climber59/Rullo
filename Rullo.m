@@ -70,6 +70,9 @@ function [ ] = Rullo( )
 		ax.Position(3) = f.Position(3)-2;
 		ax.Position(4) = f.Position(4)-100;
 		axis equal
+% 		ax.XLim = ax.XLim + [-1 1];
+% 		ax.YLim = ax.YLim + [-1 1];
+% 		axis equal
 		
 % 		c = f.Children;
 % 		for i = 1:length(c)-1
@@ -327,7 +330,6 @@ function [ ] = Rullo( )
 		ax.Box = 'on';
 		ax.YDir = 'reverse';
 		axis equal
-		hold on
 		ax.Color = f.Color;
 		
 		
