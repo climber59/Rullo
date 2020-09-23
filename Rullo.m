@@ -254,13 +254,14 @@ function [ ] = Rullo( )
 	
 	% called by pressing the Reset button
 	function [] = reset(~,~)
+% 		board
 		gameOver = false;
 		checkmark.Visible = 'off';
 		gridOn = ones(size(grid));
 		gridLocked = zeros(size(grid));
 		
-		for i = 1:size(grid,2)
-			for j = 1:size(grid,1)
+		for i = 1:size(grid,1)
+			for j = 1:size(grid,2)
 				targetsTop(j).EdgeColor = colorOffOnTarget(1,:);
 				helpersBot(j).EdgeColor = colorOffOnTarget(1,:);
 				
@@ -388,14 +389,15 @@ function [ ] = Rullo( )
 			'Position',[305 70 45 25],...
 			'String', 'Grid Size',...
 			'Tag','305');
-		gridWidth = uicontrol(f,'Style','edit',...
+		gridHeight = uicontrol(f,'Style','edit',...
 			'Position',[350 70 25 25],...
 			'String','5',...
 			'Tag','350');
-		gridHeight = uicontrol(f,'Style','edit',...
+		gridWidth = uicontrol(f,'Style','edit',...
 			'Position',[375 70 25 25],...
 			'String','5',...
 			'Tag','375');
+		
 		
 		uicontrol(f,'Style','text',...
 			'Position',[305 40 45 25],...
@@ -431,10 +433,11 @@ function [ ] = Rullo( )
 		end
 		
 		% adding the while loop could force conditions - ie at least half the grid must be on 
+		gridLog = randi(2,h,w) - 1;
 % 		while sum(sum(gridLog))<s^2/3 || sum(sum(gridLog))>s^2*19/25
-			for i = 1:w*h
-				gridLog(i) = randi(2)-1;
-			end
+% 			for i = 1:w*h
+% 				gridLog(i) = randi(2)-1;
+% 			end
 % 		end
 	end
 end
