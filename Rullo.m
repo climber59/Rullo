@@ -94,44 +94,43 @@ function [ ] = Rullo( )
 % 		textDisplay(grid, gridLog) % print to command window for debugging
 		gameSetup();
 % 		t = text(0,0,' '); % for debugging only, used in mouseClick
-		initialCheck();
+		checkTargets(-1,-1);
 	end
 	
 	% checks if any targets are already met when the game starts
-	function [] = initialCheck()
-		w = size(grid,2);
-		h = size(grid,1);
-		
-		for row=1:h
+	% only turns on, needs to turn off as well now
+	function [] = checkTargets(rows,cols)
+		if rows == -1
+			rows = 1:size(grid,1);
+		end
+		if cols == -1
+			cols = 1:size(grid,2);
+		end
+		for r = rows
 			% check row
-			s = 0;
-			for i=1:w
-				if board(row,i).FaceColor == onColor
-					s = s + grid(row,i);
-				end
-			end
-			if s == gridTargetsRow(row)
-				targetsLeft(row).EdgeColor = sumColor;
-				helpersRight(row).EdgeColor = sumColor;
+			if sum(grid(r,:).*gridOn(r,:)) == gridTargetsRow(r)
+				targetsLeft(r).EdgeColor = sumColor;
+				helpersRight(r).EdgeColor = sumColor;
+			else
+				targetsLeft(r).EdgeColor = unsumColor;
+				helpersRight(r).EdgeColor = unsumColor;
 			end
 		end
-		for col=1:w
+		for c = cols
 			% check col
-			s = 0;
-			for i=1:h
-				if board(i,col).FaceColor == onColor
-					s = s + grid(i,col);
-				end
-			end
-			if s == gridTargetsCol(col)
-				targetsTop(col).EdgeColor = sumColor;
-				helpersBot(col).EdgeColor = sumColor;
+			if sum(grid(:,c).*gridOn(:,c)) == gridTargetsCol(c)
+				targetsTop(c).EdgeColor = sumColor;
+				helpersBot(c).EdgeColor = sumColor;
+			else
+				targetsTop(c).EdgeColor = unsumColor;
+				helpersBot(c).EdgeColor = unsumColor;
 			end
 		end
 	end
 	
 	% checks if the puzzle has been completed
-	function [] = wincheck()
+	function [win] = wincheck()
+		win = false;
 		w = size(grid,2);
 		h = size(grid,1);
 
@@ -147,7 +146,7 @@ function [ ] = Rullo( )
 			end
 		end
 		if s == w+h
-% 			disp('win')
+			win = true;
 			x = 3*[-12.04 -6.38 2.78 -6.35 -12.04]+12.5*w;
 			y = -3*[0.98 -0.98 7.75 -2.35 0.98]+10*h;
 			patch(x,y,[0 .8 0]);
@@ -178,28 +177,11 @@ function [ ] = Rullo( )
 					else
 						board(row, col).FaceColor = offColor;
 					end
-				end
-				% check if row/col sum is (un)met anf change sum indicator as needed
-				
-				% check row
-				if sum(grid(row,:).*gridOn(row,:)) == gridTargetsRow(row)
-					targetsLeft(row).EdgeColor = sumColor;
-					helpersRight(row).EdgeColor = sumColor;
+					% check if row/col sum is (un)met and change sum indicator as needed
+					checkTargets(row,col);
 					wincheck();
-				else
-					targetsLeft(row).EdgeColor = unsumColor;
-					helpersRight(row).EdgeColor = unsumColor;
 				end
 				
-				% check col
-				if sum(grid(:,col).*gridOn(:,col)) == gridTargetsCol(col)
-					targetsTop(col).EdgeColor = sumColor;
-					helpersBot(col).EdgeColor = sumColor;
-					wincheck();
-				else
-					targetsTop(col).EdgeColor = unsumColor;
-					helpersBot(col).EdgeColor = unsumColor;
-				end
 			end
 			changeHelpers(0,0,row,col);
 		elseif strcmp(type, 'target')
@@ -217,7 +199,7 @@ function [ ] = Rullo( )
 
 				ind2 = ind;
 				for i = 1:length(ind)
-					if gridLocked(ind(i)) %board(ind(i)).EdgeColor == lockColor
+					if gridLocked(ind(i))
 						ind(i) = 0;
 					end
 				end
@@ -334,10 +316,10 @@ function [ ] = Rullo( )
 			case 3 % difference
 				for i = cols
 % 					n = ;
-					helpersBot(i).UserData.text.String = sprintf('%+d',sum(grid(:,i).*gridOn(:,i)) - gridTargetsCol(i));
+					helpersBot(i).UserData.text.String = sprintf('%+d',-sum(grid(:,i).*gridOn(:,i)) + gridTargetsCol(i));
 				end
 				for i = rows
-					helpersRight(i).UserData.text.String = sprintf('%+d',sum(grid(i,:).*gridOn(i,:)) - gridTargetsRow(i));
+					helpersRight(i).UserData.text.String = sprintf('%+d',-sum(grid(i,:).*gridOn(i,:)) + gridTargetsRow(i));
 				end
 			case 4 % locked sum
 				for i = cols
@@ -348,10 +330,10 @@ function [ ] = Rullo( )
 				end
 			case 5 % locked difference
 				for i = cols
-					helpersBot(i).UserData.text.String = sprintf('%+d',sum(grid(:,i).*gridOn(:,i).*gridLocked(:,i)) - gridTargetsCol(i));
+					helpersBot(i).UserData.text.String = sprintf('%+d',-sum(grid(:,i).*gridOn(:,i).*gridLocked(:,i)) + gridTargetsCol(i));
 				end
 				for i = rows
-					helpersRight(i).UserData.text.String = sprintf('%+d',sum(grid(i,:).*gridOn(i,:).*gridLocked(i,:)) - gridTargetsRow(i));
+					helpersRight(i).UserData.text.String = sprintf('%+d',-sum(grid(i,:).*gridOn(i,:).*gridLocked(i,:)) + gridTargetsRow(i));
 				end
 		end
 % 		helperPopup.Value
@@ -361,7 +343,7 @@ function [ ] = Rullo( )
 	% creates the figure and gui objects in the figure
 	function [] = figureSetup()
 		f = figure(1);
-		clf
+		clf('reset')
 		f.MenuBar = 'none';
 		f.Name = 'Rullo';
 		f.NumberTitle = 'off';
