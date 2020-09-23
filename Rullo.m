@@ -193,7 +193,7 @@ function [ ] = Rullo( )
 			if summed
 				if row == 0 || row == h+1
 					ind = sub2ind([h w], 1:h, col*ones(1,h));
-				else % col == 0 || col == l+1
+				else % col == 0 || col == w+1
 					ind = sub2ind([h w], row*ones(1,w), 1:w);
 				end
 
@@ -205,7 +205,7 @@ function [ ] = Rullo( )
 				end
 				if nnz(ind) == 0
 					for i = 1:length(ind2)
-						gridLocked(ind(i)) = false;
+						gridLocked(ind2(i)) = false;
 						board(ind2(i)).EdgeColor = unlockColor;
 					end
 				else
