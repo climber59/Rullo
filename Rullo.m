@@ -6,12 +6,6 @@ give target product as an option?
 - probably gets large quickly
 - there are so many places I rely on sum() as well
 
-'Reset' button should not have to delete and redefine graphics objects
-- should just turn everything on and unlock
-
-center the winning checkmark
-- also replace it with the good one
-
 play around with how many numbers should be on
 - between 25%-75% ?
 - at least X from each row/col?
@@ -54,6 +48,7 @@ function [ ] = Rullo( )
 	targetsLeft = [];
 	helpersBot = [];
 	helpersRight = [];
+	checkmark = [];
 	
 	colorOffOn = [0.5 0.5 0.5; 1 1 1]; % tile off;on color
 	colorUnlockLock = [0.94 0.94 0.94; 1 1 0]; % tile unlocked;locked color
@@ -87,6 +82,8 @@ function [ ] = Rullo( )
 		gameOver = false;
 		randGen(str2num(gridWidth.String),str2num(gridHeight.String),str2num(gridRangeMin.String):str2num(gridRangeMax.String));
 		gameSetup();
+		changeHelpers();
+		checkTargets(-1,-1);
 	end
 	
 	% checks if any targets are already met when the game starts
@@ -131,9 +128,10 @@ function [ ] = Rullo( )
 		end
 		if s == w+h
 			win = true;
-			x = 3*[-12.04 -6.38 2.78 -6.35 -12.04]+12.5*w;
-			y = -3*[0.98 -0.98 7.75 -2.35 0.98]+10*h;
-			patch(x,y,[0 .8 0]);
+			checkmark.Visible = 'on';
+% 			x = 3*[-12.04 -6.38 2.78 -6.35 -12.04]+12.5*w;
+% 			y = -3*[0.98 -0.98 7.75 -2.35 0.98]+10*h;
+% 			patch(x,y,[0 .8 0]);
 		end
 	end
 	
@@ -204,16 +202,13 @@ function [ ] = Rullo( )
 	% creates the gui objects in the axes
 	function [] = gameSetup(~,~)
 		cla
-		gameOver = false;
-		board = gobjects(size(grid));
 		w = size(grid,2);
 		h = size(grid,1);
+		board = gobjects(h,w);
 		targetsTop = gobjects(1,w);
 		targetsLeft = gobjects(h,1);
 		helpersBot = gobjects(1,w);
-		helpersRight = gobjects(h,1);
-		
-			
+		helpersRight = gobjects(h,1);			
 		
 		g = grid.*gridLog;
 		gridTargetsCol = sum(g); % vertical sums
@@ -221,8 +216,8 @@ function [ ] = Rullo( )
 		gridOn = ones(size(grid)); % all start on
 		gridLocked = 0*gridOn; % all start unlocked
 		
-		r = 5;
-		r2 = 15;
+		r = 5; % tile radius
+		r2 = 15; % gap between tile centers
 		x = r*cos(linspace(0, 2*pi, 48));
 		y = r*sin(linspace(0, 2*pi, 48));
 		for i = 1:h
@@ -248,6 +243,29 @@ function [ ] = Rullo( )
 			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			helpersRight(i).UserData.text = text(r2*(w+1), i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
+		s = (min([w,h]) - 1)*r2 + 2*r;
+		checkmark = patch((1 + (w>h)*abs(w-h)/2)*r2 - r + s*[0 9 37 87 100 42]/100, (1 + (h>w)*abs(w-h)/2)*r2 - r + s*[72 59 78 3 12 100]/100,[0 1 0],'FaceAlpha',0.5,'EdgeColor','none','Visible','off');
+	end
+	
+	% called by pressing the Reset button
+	function [] = reset(~,~)
+		gameOver = false;
+		checkmark.Visible = 'off';
+		gridOn = ones(size(grid));
+		gridLocked = zeros(size(grid));
+		
+		for i = 1:size(grid,2)
+			for j = 1:size(grid,1)
+				targetsTop(j).EdgeColor = colorOffOnTarget(1,:);
+				helpersBot(j).EdgeColor = colorOffOnTarget(1,:);
+				
+				board(i,j).FaceColor = colorOffOn(2,:);
+				board(i,j).EdgeColor = colorUnlockLock(1,:);
+			end
+			targetsLeft(i).EdgeColor = colorOffOnTarget(1,:);
+			helpersRight(i).EdgeColor = colorOffOnTarget(1,:);
+		end
+		
 		changeHelpers();
 		checkTargets(-1,-1);
 	end
@@ -344,7 +362,7 @@ function [ ] = Rullo( )
 		uicontrol(f,'Style','pushbutton',...
 			'String','Reset',...
 			'FontSize',20,...
-			'Callback',@gameSetup,...
+			'Callback',@reset,...
 			'Units','pixels',...
 			'Position',[50 15, 100 70],...
 			'Tag','50');		
