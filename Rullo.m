@@ -52,8 +52,9 @@ function [ ] = Rullo( )
 	
 	colorOffOn = [0.5 0.5 0.5; 1 1 1]; % tile off;on color
 	colorUnlockLock = [0.94 0.94 0.94; 1 1 0]; % tile unlocked;locked color
-	colorOffOnTarget = [1 1 1; 1 1 0]; % target unmet;met color
-	
+	colorOffOnTarget = [0.94 0.94 0.94; 1 1 0]; % target unmet;met color
+	colorTargetFace = [150 200 255]/255;%[68, 117, 237]/255; %41 115 214
+	colorHelperFace = [237 161 100]/255; %[237, 141, 68]/255; %250 172 47
 	
 
 	
@@ -230,21 +231,23 @@ function [ ] = Rullo( )
 		x = [-r -r r r];
 		y = [-r r r -r];
 		for i = 1:w
-			targetsTop(i) = patch(x+i*r2, y, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', 0, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
+			targetsTop(i) = patch(x+i*r2, y, colorTargetFace, 'ButtonDownFcn', {@mouseClick, 'target', 0, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			targetsTop(i).UserData.text = text(i*r2, 0, num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			
-			helpersBot(i) = patch(x+i*r2, y+r2*(h+1), [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', h+1, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
+			helpersBot(i) = patch(x+i*r2, y+r2*(h+1), colorHelperFace, 'ButtonDownFcn', {@mouseClick, 'target', h+1, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			helpersBot(i).UserData.text = text(i*r2, r2*(h+1), num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		for i = 1:h
-			targetsLeft(i) = patch(x, y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, 0}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
+			targetsLeft(i) = patch(x, y+i*r2, colorTargetFace, 'ButtonDownFcn', {@mouseClick, 'target', i, 0}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			targetsLeft(i).UserData.text = text(0, i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			
-			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
+			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, colorHelperFace, 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			helpersRight(i).UserData.text = text(r2*(w+1), i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		s = (min([w,h]) - 1)*r2 + 2*r;
 		checkmark = patch((1 + (w>h)*abs(w-h)/2)*r2 - r + s*[0 9 37 87 100 42]/100, (1 + (h>w)*abs(w-h)/2)*r2 - r + s*[72 59 78 3 12 100]/100,[0 1 0],'FaceAlpha',0.5,'EdgeColor','none','Visible','off');
+		ax.XLim = [-r - 1, (w + 1)*r2 + r + 1];
+		ax.YLim = [-r - 1, (h + 1)*r2 + r + 1];
 	end
 	
 	% called by pressing the Reset button
