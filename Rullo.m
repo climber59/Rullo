@@ -68,10 +68,11 @@ function [ ] = Rullo( )
 	unlockColor = [0.94 0.94 0.94];
 	sumColor = lockColor;
 	unsumColor = [1 1 1];
-% 	t = text;
 	
-	figureSetup()
 	
+
+	
+	figureSetup();
 	newGame();
 	
 	% handles resizing the ui when the user resizes the figure
@@ -91,9 +92,7 @@ function [ ] = Rullo( )
 	% starts a new game
 	function [] = newGame(~,~)
 		randGen(str2num(gridWidth.String),str2num(gridHeight.String),str2num(gridRangeMin.String):str2num(gridRangeMax.String));
-% 		textDisplay(grid, gridLog) % print to command window for debugging
 		gameSetup();
-% 		t = text(0,0,' '); % for debugging only, used in mouseClick
 		checkTargets(-1,-1);
 	end
 	
@@ -155,10 +154,8 @@ function [ ] = Rullo( )
 	
 	% called when clicking the tiles or targets
 	function [] = mouseClick(~,~, type, row, col)
-		%f.SelectionType
 		w = size(grid,2);
 		h = size(grid,1);
-% 		t.String = sprintf('%s  %d  %d',type, row, col);
 		
 		% determine what is clicked
 		if strcmp(type, 'board')
@@ -273,13 +270,6 @@ function [ ] = Rullo( )
 			helpersRight(i).UserData.text = text(r2*(w+1), i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		changeHelpers();
-% 		grid
-% 		gridOn
-% 		gridLocked
-% 		targetsTop
-% 		helpersBot
-% 		targetsLeft
-% 		helpersRight
 	end
 	
 	% changes the squares on the right and bottom to match what's selected
@@ -296,7 +286,6 @@ function [ ] = Rullo( )
 				cols = 1:size(grid,2);
 			end
 		end
-		p = {'+',''};
 		% {'Target';'Current Sum';'Difference';'Locked Sum';'Locked Difference'}
 		switch helpersPopup.Value
 			case 1 % target
@@ -315,7 +304,6 @@ function [ ] = Rullo( )
 				end
 			case 3 % difference
 				for i = cols
-% 					n = ;
 					helpersBot(i).UserData.text.String = sprintf('%+d',-sum(grid(:,i).*gridOn(:,i)) + gridTargetsCol(i));
 				end
 				for i = rows
@@ -336,8 +324,6 @@ function [ ] = Rullo( )
 					helpersRight(i).UserData.text.String = sprintf('%+d',-sum(grid(i,:).*gridOn(i,:).*gridLocked(i,:)) + gridTargetsRow(i));
 				end
 		end
-% 		helperPopup.Value
-% 		src.Value
 	end
 	
 	% creates the figure and gui objects in the figure
@@ -436,34 +422,6 @@ function [ ] = Rullo( )
 			end
 % 		end
 	end
-end
-
-% function for debugging only
-function [] = textDisplay( grid, gridLog )
-	clc
-	gridOn = grid.*gridLog
-	sum(sum(gridLog))
-	w = size(grid,2);
-	h = size(grid,1);
-	fprintf('     ')
-	for i = 1:w
-		fprintf('%3.0f ', sum(gridOn(:,i)))
-	end
-	fprintf('    \n\n')
-	
-	for i = 1:h
-		fprintf('%3.0f  ', sum(gridOn(i,:)));
-		for j=1:w
-			fprintf('%3.0f ', grid(i,j));
-		end
-		fprintf(' %3.0f \n', sum(gridOn(i,:)));
-	end
-	
-	fprintf('\n     ')
-	for i = 1:w
-		fprintf('%3.0f ', sum(gridOn(:,i)))
-	end
-	fprintf('    \n')
 end
 
 
