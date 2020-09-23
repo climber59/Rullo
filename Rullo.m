@@ -230,18 +230,20 @@ function [ ] = Rullo( )
 		
 		x = [-r -r r r];
 		y = [-r r r -r];
+		color = [colorHelperFace; colorTargetFace];
+		color = color(1 + (helpersPopup.Value == 1),:);
 		for i = 1:w
 			targetsTop(i) = patch(x+i*r2, y, colorTargetFace, 'ButtonDownFcn', {@mouseClick, 'target', 0, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',4);
 			targetsTop(i).UserData.text = text(i*r2, 0, num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			
-			helpersBot(i) = patch(x+i*r2, y+r2*(h+1), colorHelperFace, 'ButtonDownFcn', {@mouseClick, 'target', h+1, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',4);
+			helpersBot(i) = patch(x+i*r2, y+r2*(h+1), color, 'ButtonDownFcn', {@mouseClick, 'target', h+1, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',4);
 			helpersBot(i).UserData.text = text(i*r2, r2*(h+1), num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		for i = 1:h
 			targetsLeft(i) = patch(x, y+i*r2, colorTargetFace, 'ButtonDownFcn', {@mouseClick, 'target', i, 0}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',4);
 			targetsLeft(i).UserData.text = text(0, i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			
-			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, colorHelperFace, 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',4);
+			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, color, 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',4);
 			helpersRight(i).UserData.text = text(r2*(w+1), i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		s = (min([w,h]) - 1)*r2 + 2*r;
@@ -325,6 +327,18 @@ function [ ] = Rullo( )
 					helpersRight(i).UserData.text.String = sprintf('%+d',-sum(grid(i,:).*gridOn(i,:).*gridLocked(i,:)) + gridTargetsRow(i));
 				end
 		end
+		% recolor the helpers when helpersPopup changed from or to 'Target'
+		if helpersPopup.Value ~= helpersPopup.UserData.oldValue && (helpersPopup.Value == 1 || helpersPopup.UserData.oldValue == 1)
+			color = [colorHelperFace; colorTargetFace];
+			color = color(1 + (helpersPopup.Value == 1),:);
+			for i = cols
+				helpersBot(i).FaceColor = color;
+			end
+			for i = rows
+				helpersRight(i).FaceColor = color;
+			end
+		end
+		helpersPopup.UserData.oldValue = helpersPopup.Value;
 	end
 	
 	% creates the figure and gui objects in the figure
@@ -403,7 +417,8 @@ function [ ] = Rullo( )
 			'Callback',@changeHelpers,...
 			'Units','pixels',...
 			'Position',[425 15, 150 70],...
-			'Tag','50');
+			'Tag','425',...
+			'UserData',struct('oldValue',1));
 	end
 	
 	% generates the grid of random numbers and which ones should be 'on' to
