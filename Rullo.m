@@ -1,10 +1,4 @@
 %{
-combine some of the COLOR vars so I can use logicals like gridOn and
-gridLocked to index the color
-
-turn initialCheck() into a function that can check 'r,c' or everything at
-the start of a new game
-
 sanitize the text boxes' inputs
 - swap the row,col size or at least label it
 
@@ -14,11 +8,6 @@ give target product as an option?
 
 'Reset' button should not have to delete and redefine graphics objects
 - should just turn everything on and unlock
-
-Proper resizing
-- mostly font sizes
-- give a little buffer so objects aren't cut off slightly
-- most ui objects are in 'pixels'. 'normalize' might be better
 
 end the game after the puzzle is complete
 
@@ -38,6 +27,11 @@ generally improve the visuals
 - target's correct sum indicator is hard to see
 - more pleasant colors would be nice
 - helpers and targets should have visual differences to prevent confusion
+
+Proper resizing
+- mostly font sizes
+- give a little buffer so objects aren't cut off slightly
+- most ui objects are in 'pixels'. 'normalize' might be better
 %}
 function [ ] = Rullo( )
 	clc
@@ -62,12 +56,9 @@ function [ ] = Rullo( )
 	helpersBot = [];
 	helpersRight = [];
 	
-	onColor = [1 1 1];
-	offColor = [0.5 0.5 0.5];
-	lockColor = [1 1 0];
-	unlockColor = [0.94 0.94 0.94];
-	sumColor = lockColor;
-	unsumColor = [1 1 1];
+	colorOffOn = [0.5 0.5 0.5; 1 1 1]; % tile off;on color
+	colorUnlockLock = [0.94 0.94 0.94; 1 1 0]; % tile unlocked;locked color
+	colorOffOnTarget = [1 1 1; 1 1 0]; % target unmet;met color
 	
 	
 
@@ -107,23 +98,15 @@ function [ ] = Rullo( )
 		end
 		for r = rows
 			% check row
-			if sum(grid(r,:).*gridOn(r,:)) == gridTargetsRow(r)
-				targetsLeft(r).EdgeColor = sumColor;
-				helpersRight(r).EdgeColor = sumColor;
-			else
-				targetsLeft(r).EdgeColor = unsumColor;
-				helpersRight(r).EdgeColor = unsumColor;
-			end
+			c = colorOffOnTarget(1 + (sum(grid(r,:).*gridOn(r,:)) == gridTargetsRow(r)),:);
+			targetsLeft(r).EdgeColor = c;
+			helpersRight(r).EdgeColor = c;
 		end
 		for c = cols
 			% check col
-			if sum(grid(:,c).*gridOn(:,c)) == gridTargetsCol(c)
-				targetsTop(c).EdgeColor = sumColor;
-				helpersBot(c).EdgeColor = sumColor;
-			else
-				targetsTop(c).EdgeColor = unsumColor;
-				helpersBot(c).EdgeColor = unsumColor;
-			end
+			color = colorOffOnTarget(1 + (sum(grid(:,c).*gridOn(:,c)) == gridTargetsCol(c)),:);
+			targetsTop(c).EdgeColor = color;
+			helpersBot(c).EdgeColor = color;
 		end
 	end
 	
@@ -135,12 +118,12 @@ function [ ] = Rullo( )
 
 		s = 0;
 		for i=1:h
-			if targetsLeft(i,1).EdgeColor == sumColor
+			if targetsLeft(i,1).EdgeColor == colorOffOnTarget(2,:)
 				s = s + 1;
 			end
 		end
 		for i=1:w
-			if targetsTop(1, i).EdgeColor == sumColor
+			if targetsTop(1, i).EdgeColor == colorOffOnTarget(2,:)
 				s = s + 1;
 			end
 		end
@@ -161,19 +144,11 @@ function [ ] = Rullo( )
 		if strcmp(type, 'board')
 			if strcmp(f.SelectionType,'alt')
 				gridLocked(row,col) = ~gridLocked(row,col);
-				if gridLocked(row,col)
-					board(row,col).EdgeColor = lockColor;
-				else
-					board(row,col).EdgeColor = unlockColor;
-				end
+				board(row,col).EdgeColor = colorUnlockLock(1 + gridLocked(row,col),:);
 			else
 				if ~gridLocked(row,col)
 					gridOn(row, col) = ~gridOn(row, col);
-					if gridOn(row,col)
-						board(row, col).FaceColor = onColor;
-					else
-						board(row, col).FaceColor = offColor;
-					end
+					board(row, col).FaceColor = colorOffOn(1 + gridOn(row,col),:);
 					% check if row/col sum is (un)met and change sum indicator as needed
 					checkTargets(row,col);
 					wincheck();
@@ -183,9 +158,9 @@ function [ ] = Rullo( )
 			changeHelpers(0,0,row,col);
 		elseif strcmp(type, 'target')
 			if row==0 || row==h+1 % clicking vertical targets
-				summed = (targetsTop(1,col).EdgeColor==sumColor);
+				summed = (targetsTop(1,col).EdgeColor==colorOffOnTarget(2,:));
 			else % horz targets
-				summed = (targetsLeft(row,1).EdgeColor==sumColor);
+				summed = (targetsLeft(row,1).EdgeColor==colorOffOnTarget(2,:));
 			end
 			if summed
 				if row == 0 || row == h+1
@@ -203,18 +178,18 @@ function [ ] = Rullo( )
 				if nnz(ind) == 0
 					for i = 1:length(ind2)
 						gridLocked(ind2(i)) = false;
-						board(ind2(i)).EdgeColor = unlockColor;
+						board(ind2(i)).EdgeColor = colorUnlockLock(1,:);
 					end
 				else
 					ind = nonzeros(ind);
 					for i = 1:length(ind)
 						gridLocked(ind(i)) = true;
-						board(ind(i)).EdgeColor = lockColor;
+						board(ind(i)).EdgeColor = colorUnlockLock(2,:);
 					end
 				end
 				if row == 0 || row == h+1
 					changeHelpers(0,0,-1,col);
-				else % col == 0 || col == l+1
+				else % col == 0 || col == w+1
 					changeHelpers(0,0,row,-1);
 				end
 				
@@ -248,25 +223,25 @@ function [ ] = Rullo( )
 		y = r*sin(linspace(0, 2*pi, 48));
 		for i = 1:h
 			for j = 1:w
-				board(i,j) = patch(x+j*r2,y+i*r2,onColor, 'ButtonDownFcn', {@mouseClick, 'board', i, j}, 'EdgeColor', unlockColor, 'LineWidth', 3);
-				text(j*r2, i*r2, num2str(grid(i,j)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
+				board(i,j) = patch(x+j*r2,y+i*r2,colorOffOn(2,:), 'ButtonDownFcn', {@mouseClick, 'board', i, j}, 'EdgeColor', colorUnlockLock(1,:), 'LineWidth', 3);
+				board(i,j).UserData.text = text(j*r2, i*r2, num2str(grid(i,j)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			end
 		end
 		
 		x = [-r -r r r];
 		y = [-r r r -r];
 		for i = 1:w
-			targetsTop(i) = patch(x+i*r2, y, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', 0, i}, 'EdgeColor', unsumColor);
-			text(i*r2, 0, num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
+			targetsTop(i) = patch(x+i*r2, y, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', 0, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
+			targetsTop(i).UserData.text = text(i*r2, 0, num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			
-			helpersBot(i) = patch(x+i*r2, y+r2*(h+1), [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', h+1, i}, 'EdgeColor', unsumColor);
+			helpersBot(i) = patch(x+i*r2, y+r2*(h+1), [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', h+1, i}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			helpersBot(i).UserData.text = text(i*r2, r2*(h+1), num2str(gridTargetsCol(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		for i = 1:h
-			targetsLeft(i) = patch(x, y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, 0}, 'EdgeColor', unsumColor);
-			text(0, i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
+			targetsLeft(i) = patch(x, y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, 0}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
+			targetsLeft(i).UserData.text = text(0, i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 			
-			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', unsumColor);
+			helpersRight(i) = patch(x+r2*(w+1), y+i*r2, [1 1 1], 'ButtonDownFcn', {@mouseClick, 'target', i, w+1}, 'EdgeColor', colorOffOnTarget(1,:),'LineWidth',2);
 			helpersRight(i).UserData.text = text(r2*(w+1), i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		changeHelpers();
