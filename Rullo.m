@@ -9,14 +9,12 @@ give target product as an option?
 'Reset' button should not have to delete and redefine graphics objects
 - should just turn everything on and unlock
 
-end the game after the puzzle is complete
-
 center the winning checkmark
 - also replace it with the good one
 
 play around with how many numbers should be on
 - between 25%-75% ?
-- at least 2 from each row/col?
+- at least X from each row/col?
 
 include some preset number ranges
 - 2:3
@@ -50,6 +48,7 @@ function [ ] = Rullo( )
 	gridTargetsRow = [];
 	helpersPopup = [];
 	
+	gameOver = [];
 	board = [];
 	targetsTop = [];
 	targetsLeft = [];
@@ -82,9 +81,9 @@ function [ ] = Rullo( )
 
 	% starts a new game
 	function [] = newGame(~,~)
+		gameOver = false;
 		randGen(str2num(gridWidth.String),str2num(gridHeight.String),str2num(gridRangeMin.String):str2num(gridRangeMax.String));
 		gameSetup();
-		checkTargets(-1,-1);
 	end
 	
 	% checks if any targets are already met when the game starts
@@ -137,6 +136,9 @@ function [ ] = Rullo( )
 	
 	% called when clicking the tiles or targets
 	function [] = mouseClick(~,~, type, row, col)
+		if gameOver
+			return
+		end
 		w = size(grid,2);
 		h = size(grid,1);
 		
@@ -151,9 +153,8 @@ function [ ] = Rullo( )
 					board(row, col).FaceColor = colorOffOn(1 + gridOn(row,col),:);
 					% check if row/col sum is (un)met and change sum indicator as needed
 					checkTargets(row,col);
-					wincheck();
+					gameOver = wincheck();
 				end
-				
 			end
 			changeHelpers(0,0,row,col);
 		elseif strcmp(type, 'target')
@@ -192,7 +193,6 @@ function [ ] = Rullo( )
 				else % col == 0 || col == w+1
 					changeHelpers(0,0,row,-1);
 				end
-				
 			end
 		end
 		
@@ -201,6 +201,7 @@ function [ ] = Rullo( )
 	% creates the gui objects in the axes
 	function [] = gameSetup(~,~)
 		cla
+		gameOver = false;
 		board = gobjects(size(grid));
 		w = size(grid,2);
 		h = size(grid,1);
@@ -245,6 +246,7 @@ function [ ] = Rullo( )
 			helpersRight(i).UserData.text = text(r2*(w+1), i*r2, num2str(gridTargetsRow(i)), 'PickableParts','none', 'HorizontalAlignment', 'center', 'FontSize', 20);
 		end
 		changeHelpers();
+		checkTargets(-1,-1);
 	end
 	
 	% changes the squares on the right and bottom to match what's selected
